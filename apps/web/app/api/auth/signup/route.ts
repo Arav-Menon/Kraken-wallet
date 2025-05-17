@@ -86,38 +86,3 @@ export async function POST(req: NextRequest) {
         console.error(error);
     }
 }
-
-export async function GET(req: NextRequest) {
-
-    try {
-
-        const userId = req.headers.get('user-id');
-
-        if (!userId) {
-            return NextResponse.json({
-                message: "Unauthorized"
-            }, { status: 401 });
-        }
-
-        const getProfileInfo = await prisma.user.findMany({
-            select: {
-                id: true,
-                name: true,
-                email: true,
-                number: true,
-                bankName: true,
-            }
-        })
-
-        return NextResponse.json({
-            message: 'your profile info',
-            getProfileInfo
-        })
-
-    } catch (e) {
-        console.log(e)
-        return NextResponse.json({
-            message: "Internal server error",
-        })
-    }
-}
