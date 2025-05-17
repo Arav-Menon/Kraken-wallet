@@ -1,28 +1,39 @@
 import CredentialsProvider from "next-auth/providers/credentials"
 import { PrismaClient } from "../../../../packages/db";
-import { NextResponse } from "next/server";
+import { inputValidationSignin } from "../../../../packages/lib/inputValidation";
+import bcrypt from 'bcrypt'
+import { NextRequest, NextResponse, userAgent } from "next/server";
+import jwt from 'jsonwebtoken'
 
 const prisma = new PrismaClient();
 
 export const authOptions = {
 
     providers: [
+
         CredentialsProvider({
             name: 'Credentials',
             credentials: {
-                name: { label: "Username", type: "text", placeholder: "jsmith" },
                 email: { label: "Email", type: "email", placeholder: "jsmith@gmail.com" },
-                number : { label : "number", type : "number", placeholder : "Enter your phone number" },
-                bankName : { label: "Bank name", type : "text", placeholder : "Bank name" },
-                password: { label: "Password", type: "password" }
+                password: { label: "Password", type: "password", placeholder: "Password" }
             },
 
             //@ts-ignore
             async authorize(credentials, req) {
 
-                if (!credentials?.name || !credentials?.email || !credentials?.password) {
-                    throw new Error('Fields are missing');
+                try {
+
+                    const result = inputValidationSignin.safeParse({
+                    email: credentials?.email,
+                    password: credentials?.password
+                })
+
+                if (!result.success) {
+                    throw new Error("invalid format")
                 }
+
+                const { email, password } = result.data
+
 
                 const existUser = await prisma.user.findFirst({
                     where: {
@@ -30,42 +41,55 @@ export const authOptions = {
                     }
                 })
 
-                if (existUser) {
-                    return {
-                        //@ts-ignore
-                        id: credentials?.id.toString(),
-                        name: credentials?.name,
-                        email: credentials?.email
-                    }
+                if (!existUser) {
+                    throw new Error("No user found with this email")
                 }
+                
+                const matchPassword = await bcrypt.compare(password, existUser.password)
+                
+                if (!matchPassword) {
+                    throw new Error("Invalid password")
+                }
+                
+                return NextResponse.json({
+                    id: existUser.id,
+                    email: existUser.email,
+                    name: existUser.name
+                })
 
-
-                try {
-
-                    const user = await prisma.user.create({
-                        data: {
-                            name: credentials?.name,
-                            email: credentials?.email,
-                            //@ts-ignore
-                            number: credentials?.number,
-                            bankName: credentials?.bankName,
-                            password: credentials?.password
-                        }
-                    })
-
-                    return {
-                        you_info: {
-                            name: credentials?.name,
-                            email: credentials?.email
-                        }
-                    }
-
-                } catch (e) {
-                    NextResponse.json(`Internal server error`);
-                    console.log(e)
+                
+            }catch(e) {
+                NextResponse.json({
+                        message : 'Internal server error'
+                    }, {status : 500} )
                 }
             }
         })
-    ]
+    ],
 
-}
+    callbacks : {
+
+        async jwt({ token, user }: { token: any, user?: any }) {
+            if(user) {
+                token.id = user.id
+            }
+            return token
+        },
+
+        async session({ session, token } : { session : any, token : any }) {
+            if(token) {
+                session.user.id = token.id
+            }
+            return session
+        }
+
+    },
+
+    // pages : {
+        
+    // },
+        session : {
+            strategy : 'jwt'
+        }
+
+};
