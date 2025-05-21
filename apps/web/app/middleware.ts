@@ -22,7 +22,7 @@ export async function middleware(request: NextRequest) {
 
         // Add user info to request headers
         const requestHeaders = new Headers(request.headers);
-        requestHeaders.set('user-id', decoded.userId);
+        requestHeaders.set('sender-id', decoded.userId);
         requestHeaders.set('user-email', decoded.email);
 
         // Return response with modified headers
@@ -61,6 +61,7 @@ export function pathMiddleware(request : NextRequest) {
 export const config = {
     matcher: [
         '/api/user/profile/:path*',
-        '/api/user/transactions/:path*'
+        '/api/user/transactions/:path*',
+        '/api/transfer/:path*'
     ]
 };
