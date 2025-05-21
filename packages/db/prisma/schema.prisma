@@ -8,14 +8,25 @@ datasource db {
 }
 
 model User {
-  id                Int                 @id @default(autoincrement())
+  id                Int        @id @default(autoincrement())
   name              String
-  email             String              @unique
-  number            String              @unique
+  email             String     @unique
+  number            String     @unique
   bankName          String
   password          String
-  OnRampTransaction OnRampTransaction[]
+  sentTransfers     Transfer[] @relation("sentTransfers")
+  receivedTransfers Transfer[] @relation("ReceivedTransfers")
   Balance           Balance[]
+}
+
+model Transfer {
+  id         Int      @id @default(autoincrement())
+  amount     Int
+  createdAt  DateTime @default(now())
+  senderId   Int
+  receiverId Int
+  sender     User  @relation("sentTransfers", fields: [senderId], references: [id])
+  receiver   User  @relation("ReceivedTransfers", fields: [receiverId], references: [id])
 }
 
 model Merchant {
@@ -23,17 +34,6 @@ model Merchant {
   email     String   @unique
   password  String
   auth_type AuthType
-}
-
-model OnRampTransaction {
-  id        Int          @id @default(autoincrement())
-  status    OnRampStatus
-  token     String       @unique
-  provider  String
-  amount    Int
-  startTime DateTime
-  userId    Int
-  user      User         @relation(fields: [userId], references: [id])
 }
 
 model Balance {

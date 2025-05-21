@@ -1,5 +1,6 @@
 import { NextResponse, NextRequest } from "next/server";
 import * as jwt from 'jsonwebtoken';
+import { request } from "http";
 
 export async function middleware(request: NextRequest) {
     try {
@@ -37,6 +38,23 @@ export async function middleware(request: NextRequest) {
             message: "Unauthorized - Invalid token"
         }, { status: 401 });
     }
+}
+
+export function pathMiddleware(request : NextRequest) {
+
+    const token = request.cookies.get('token')?.value;
+    const { pathname } = request.nextUrl;
+
+    if( token && (pathname === '/signin' || pathname === '/signup' || pathname === '/' )) {
+        return NextResponse.redirect( new URL('/dashboard', request.url))
+    }
+
+    if(token && pathname.startsWith('/dashboard')) {
+        return NextResponse.redirect(new URL('/signin', request.url))
+    }
+
+    return NextResponse.next()
+
 }
 
 // Configure which routes to protect

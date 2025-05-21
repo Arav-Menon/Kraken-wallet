@@ -11,6 +11,8 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.0.1",
+    "@radix-ui/react-label": "^2.1.6",
     "@repo/db": "*",
     "@repo/ui": "*",
     "next": "^15.3.0",
