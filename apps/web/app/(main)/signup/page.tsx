@@ -2,7 +2,7 @@
 
 import { MoveLeft } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import { API_URL } from "../../../api";
 import { useRouter } from "next/navigation";
@@ -15,7 +15,8 @@ export default function Home() {
     const [password, setPassword] = useState("");
     const router = useRouter();
 
-    const onHandleSubmit = async () => {
+    const onHandleSubmit = async (e : React.FormEvent) => {
+        e.preventDefault();
 
         try {
 
@@ -27,7 +28,11 @@ export default function Home() {
                 password,
             });
 
-            
+            if(response.status === 201) {
+                router.push('/dashboard');
+            }
+
+
 
         } catch (e) {
             console.log(`Signup ${e}`);

@@ -7,24 +7,32 @@ import { API_URL } from "../../../api";
 import { useRouter } from "next/navigation";
 import { Button } from "@repo/ui/button";
 import MyLoader from "../../../components/landing/src/loaders";
+import { signIn } from "next-auth/react";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [ loader, setLoader ] = useState(false);
+  const [loader, setLoader] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+
+    e.preventDefault()
 
     try {
-      await axios.post(`${API_URL}/api/auth/signin`, {
+
+      const res = await signIn("credentials", {
+        redirect: false,
         email,
         password
       });
 
-      setLoader(true)
-      router.replace('/dashboard');
+      if (res?.error) {
+        setError('res.error')
+      } else {
+        router.replace('/dashboard')
+      }
 
 
     } catch (e) {
@@ -96,14 +104,14 @@ export default function SignInPage() {
             className="w-full py-2 bg-black mt-5 text-white font-semibold rounded-lg hover:bg-black/90 transition"
             onClick={handleSubmit}
           >
-            { loader ? (
+            {loader ? (
 
               <>
-              <MyLoader/>
+                <MyLoader />
               </>
 
-            ) : 'Sign in' }
-            
+            ) : 'Sign in'}
+
           </Button>
           <div className="flex justify-center gap-2 mt-4 " >
             <p>Don't have an account</p>

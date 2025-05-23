@@ -1,5 +1,8 @@
 'use client'
 
+import { TrendingUpDown } from "lucide-react";
+import { signOut } from "next-auth/react";
+import { redirect, useRouter } from "next/navigation";
 import React, { useState } from "react";
 
 const mockUser = {
@@ -13,10 +16,11 @@ export default function ProfilePage() {
     const [user, setUser] = useState(mockUser);
     const [editing, setEditing] = useState(false);
     const [form, setForm] = useState({ name: user.name, email: user.email });
-
+    const router = useRouter()
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
+
 
     const handleUpdate = (e: React.FormEvent) => {
         e.preventDefault();
@@ -28,6 +32,26 @@ export default function ProfilePage() {
         if (window.confirm("Are you sure you want to delete your profile?")) {
             setUser({ name: "", email: "", avatar: "" });
         }
+    };
+
+    const handleLogout = async () => {
+
+        try {
+
+            await signOut({
+                redirect: true,
+                callbackUrl: '/'
+            })
+
+            document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+
+            localStorage.clear();
+
+        } catch (e) {
+            console.log(e)
+        }
+
+
     };
 
     return (
@@ -60,6 +84,12 @@ export default function ProfilePage() {
                                     onClick={handleDelete}
                                 >
                                     Delete
+                                </button>
+                                <button
+                                    className="bg-gradient-to-r from-gray-500 to-gray-700 text-white px-5 py-2 rounded-full shadow hover:scale-105 transition-transform font-semibold"
+                                    onClick={handleLogout}
+                                >
+                                    Logout
                                 </button>
                             </div>
                         </>

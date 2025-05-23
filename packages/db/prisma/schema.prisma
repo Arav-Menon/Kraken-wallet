@@ -25,6 +25,7 @@ model Transfer {
   createdAt  DateTime @default(now())
   senderId   Int
   receiverId Int
+  status TransferStatus
   sender     User  @relation("sentTransfers", fields: [senderId], references: [id])
   receiver   User  @relation("ReceivedTransfers", fields: [receiverId], references: [id])
 }
@@ -49,7 +50,7 @@ enum AuthType {
   Github
 }
 
-enum OnRampStatus {
+enum TransferStatus {
   Success
   pending
   Failure
