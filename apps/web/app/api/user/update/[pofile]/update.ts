@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "../../../../../../../packages/db";
 import { inputValidationForUpdate } from "../../../../../../../packages/lib/inputValidation";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../../../lib/auth";
 
 const prisma = new PrismaClient();
 
@@ -8,9 +10,9 @@ export async function PUT(req: NextRequest) {
 
     try {
 
-        const userId = req.headers.get('token');
+        const session = await getServerSession(authOptions)
 
-        if (!userId) {
+        if (!session) {
             return NextResponse.json({
                 message: 'Unauthorize',
             }, { status: 401 })
@@ -64,13 +66,13 @@ export async function PUT(req: NextRequest) {
 
 }
 
-export async function GET(req: NextRequest) {
+export async function GET() {
 
     try {
 
-        const userId = req.headers.get('user-id');
+        const session = await getServerSession(authOptions)
 
-        if (!userId) {
+        if (!session) {
             return NextResponse.json({
                 message: "Unauthorized"
             }, { status: 401 });

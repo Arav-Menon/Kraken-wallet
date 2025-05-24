@@ -3,8 +3,20 @@ import { PrismaClient } from "../../../../packages/db";
 import { inputValidationSignin } from "../../../../packages/lib/inputValidation";
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
+import { DefaultSession, Session } from "next-auth";
+import { JWT } from "next-auth/jwt";
 
 const prisma = new PrismaClient();
+
+declare module "next-auth" {
+    interface Session {
+        user: {
+            id: number,
+            email: string,
+            name: string
+        } & DefaultSession['user']
+    }
+}
 
 export const authOptions = {
 
@@ -60,7 +72,7 @@ export const authOptions = {
                 } catch (e) {
                     console.error(e);
                     throw new Error(`Internal server error`)
-                    
+
                 }
             }
         })
@@ -68,24 +80,30 @@ export const authOptions = {
 
     callbacks: {
 
-        async jwt({ token, user }: { token: any, user?: any }) {
+        //@ts-ignore
+        async jwt({ token, user }) {
             if (user) {
                 token.id = user.id
+                token.email = user.email,
+                token.name = user.name
             }
             return token
         },
 
-        async session({ session, token }: { session: any, token: any }) {
-            if (token) {
-                session.user.id = token.id
+        async session({ session, token }: { session: Session, token: JWT }) {
+            return {
+                ...session,
+                user: {
+                    ...session.user,
+                    id: token.id
+                }
             }
-            return session
         }
 
     },
 
     pages: {
-        // signIn: '/signin',
+        signIn: '/signin',
         // signOut: '/auth/signout',
         // error: '/auth/error', // Error code passed in query string as ?error=
         // verifyRequest: '/auth/verify-request', // (used for check email message)
@@ -93,7 +111,8 @@ export const authOptions = {
     },
 
     session: {
-        strategy: 'jwt'
+        strategy: 'jwt' as const,
+        maxAge : 24 * 60 * 60
     }
 
 };

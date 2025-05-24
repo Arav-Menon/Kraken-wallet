@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "../../../../../packages/db";
+import { getServerSession, Session } from "next-auth";
+import { authOptions } from "../../lib/auth";
 
 const primsa = new PrismaClient();
 
@@ -7,11 +9,11 @@ export async function POST(req: NextRequest) {
 
     try {
 
-        const senderId = req.headers.get('sender-id')
+        const session = await getServerSession(authOptions) as Session
 
-        if (!senderId) {
+        if (!session) {
             return NextResponse.json({
-                message: "Unauthorizd - No sender ID"
+                message: "User not logged In"
             })
         }
 
@@ -36,7 +38,7 @@ export async function POST(req: NextRequest) {
             try {
 
                 await tx.balance.update({
-                    where: { userId: parseInt(senderId) },
+                    where: { userId: session.user.id },
                     data: { amount: { decrement: amount } }
                 })
 
@@ -48,7 +50,7 @@ export async function POST(req: NextRequest) {
                 return await tx.transfer.create({
                     data: {
                         amount: amount,
-                        senderId: parseInt(senderId),
+                        senderId: session.user.id,
                         receiverId: receiver.id,
                         status: 'Success'
                     }
@@ -59,7 +61,7 @@ export async function POST(req: NextRequest) {
                 return await tx.transfer.create({
                     data: {
                         amount: amount,
-                        senderId: parseInt(senderId),
+                        senderId: session.user.id,
                         receiverId: receiver.id,
                         status: 'Success'
                     }
