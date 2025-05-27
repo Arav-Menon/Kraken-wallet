@@ -39,8 +39,12 @@ export default function PayPage() {
                 withCredentials: true
             });
 
-            if (response.status === 201) {
+            if (response.status === 200) {
                 alert('Money has been sent')
+                setReceiverName('');
+                setBankName('');
+                setNumber('');
+                setAmount('');
             }
 
         } catch (e) {
