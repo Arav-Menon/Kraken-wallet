@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "../../../../../../packages/db";
 import bcrypt from 'bcrypt';
 import { inputValidation } from "../../../../../../packages/lib/inputValidation";
-import jwt, { JwtPayload } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import 'dotenv/config'
 
 const prisma = new PrismaClient();
@@ -20,6 +20,8 @@ export async function POST(req: NextRequest) {
         }
 
         const { name, email, number, bankName, password } = result.data;
+
+        const randomBalance = Math.floor(Math.random() * 10000) + 1;
 
         return await prisma.$transaction(async (tx) => {
 
@@ -46,7 +48,12 @@ export async function POST(req: NextRequest) {
                     email,
                     number,
                     bankName,
-                    password: hashedPassword
+                    password: hashedPassword,
+                    Balance: {
+                        create: {
+                            amount: randomBalance
+                        }
+                    }
                 }
             });
 
