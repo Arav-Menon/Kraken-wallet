@@ -29,7 +29,7 @@ export default function SignInPage() {
       });
 
       if (res?.error) {
-        setError('res.error')
+        setError(error)
       } else {
         router.replace('/dashboard')
       }
@@ -58,13 +58,13 @@ export default function SignInPage() {
         </Link>
       </div>
 
-      <div className="min-h-screen flex items-center justify-center bg-white">
-
         {error && (
           <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
             <p className="text-red-600 text-sm text-center">{error}</p>
           </div>
         )}
+      <div className="min-h-screen flex items-center justify-center bg-white">
+
 
         <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md">
           <h2 className="text-3xl font-bold text-center text-black mb-6">
