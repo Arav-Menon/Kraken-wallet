@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 import Balance from "../../../../components/component/balance";
+import axios from "axios";
+import { API_URL } from "../../../../api";
 
 const banks = [
     "HDFC Bank",
@@ -11,36 +13,35 @@ const banks = [
 ];
 
 export default function Wallet() {
-    const [balance, setBalance] = useState(200);
-    const [lockedBalance] = useState(0);
     const [amount, setAmount] = useState("");
     const [bank, setBank] = useState(banks[0]);
-    const [transactions, setTransactions] = useState([
-        {
-            type: "Received INR",
-            amount: 200,
-            date: new Date("2024-03-30"),
-        },
-    ]);
+    const [notification, setNotification] = useState<string | undefined>()
 
-    const handleAddMoney = () => {
-        const value = parseFloat(amount);
-        if (!isNaN(value) && value > 0) {
-            setBalance(balance + value);
-            setTransactions([
-                {
-                    type: "Received INR",
-                    amount: value,
-                    date: new Date(),
-                },
-                ...transactions,
-            ]);
-            setAmount("");
+    const handleAddMoney = async () => {
+
+        const response = await axios.post(`${API_URL}/api/wallet`, {
+            amount
+        }, {
+            headers : {
+                'Content-Type' : 'application/json'
+            }, withCredentials : true
+        },)
+
+        if(response.status === 200) {
+            setNotification(`Amount ${amount} has been transfed to your account`),
+            setAmount('');
         }
+
     };
+
 
     return (
         <div className="min-h-screen px-4 py-8 overflow-hidden">
+
+            <div className="text-xl text-center mt-2 font-bold bg-gradient-to-r from-purple-500 to-pink-200 bg-clip-text text-transparent animate-blink">
+                {notification}
+            </div>
+
             <div className="flex flex-col md:flex-row gap-8">
                 {/* Add Money */}
                 <div className="bg-white rounded-xl shadow p-6 flex-1 max-w-sm">
@@ -76,9 +77,6 @@ export default function Wallet() {
                 </div>
 
                <Balance/>
-
-               
-                  
                 </div>
             </div>
     );
