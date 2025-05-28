@@ -20,6 +20,9 @@ export async function GET() {
         }
 
         const getProfileInfo = await prisma.user.findMany({
+            where : {
+                id : session.user.id as number
+            },
             select: {
                 id: true,
                 name: true,
