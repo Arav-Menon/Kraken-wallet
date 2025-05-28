@@ -32,11 +32,11 @@ export async function POST(req: NextRequest) {
             const balance = await tx.balance.upsert({
                 where: { userId: session.user.id },
                 update: {
-                    amount: { increment: amount }
+                    amount: { increment: parseInt(amount) }
                 },
                 create: {
                     id: session.user.id,
-                    amount: amount,
+                    amount: parseInt(amount),
                     userId: session.user.id
                 }
             })
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({
             message: "Balance updated succesfully",
             data: transaction
-        })
+        }, { status: 200 })
 
     } catch (e) {
         console.log(e)
@@ -68,11 +68,8 @@ export async function GET() {
 
         const getBalanceData = await prisma.balance.findUnique({
             where: {
-                id: session.user.id as number
+                userId: session.user.id as number
             },
-            select: {
-                amount: true
-            }
         })
 
         if (!getBalanceData) {
@@ -83,14 +80,14 @@ export async function GET() {
         }
 
         return NextResponse.json({
-            message: 'Your balance',
+            message: 'Balance fetch succesfully',
             getBalanceData
-        })
+        }, { status: 200 })
 
     } catch (e) {
-        console.error('Faild to get data from db')
+        console.error('Faild to get data from db', e)
         return NextResponse.json({
-            message: 'Internal server error'
+            message: 'Internal server error', e
         }, { status: 500 });
     }
 }
