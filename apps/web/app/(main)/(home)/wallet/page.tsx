@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from "react";
+import Balance from "../../../../components/component/balance";
 
 const banks = [
     "HDFC Bank",
@@ -74,58 +75,11 @@ export default function Wallet() {
                     </button>
                 </div>
 
-                {/* Balance & Transactions */}
-                <div className="flex flex-col gap-6 flex-1">
-                    {/* Balance */}
-                    <div className="bg-white rounded-xl shadow p-6">
-                        <h2 className="text-2xl font-semibold mb-4">Balance</h2>
-                        <div className="flex flex-col gap-2">
-                            <div className="flex justify-between">
-                                <span>Unlocked balance</span>
-                                <span className="font-medium">{balance} INR</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span>Total Locked Balance</span>
-                                <span className="font-medium">{lockedBalance} INR</span>
-                            </div>
-                            <div className="flex justify-between border-t pt-2 mt-2">
-                                <span>Total Balance</span>
-                                <span className="font-semibold">{balance + lockedBalance} INR</span>
-                            </div>
-                        </div>
-                    </div>
-                    {/* Recent Transactions */}
-                    <div className="bg-white rounded-xl shadow p-6">
-                        <h2 className="text-2xl font-semibold mb-4">Recent Transactions</h2>
-                        {transactions.length === 0 ? (
-                            <div className="text-gray-500">No transactions yet.</div>
-                        ) : (
-                            <ul>
-                                {transactions.slice(0, 3).map((tx, idx) => (
-                                    <li key={idx} className="mb-4 last:mb-0">
-                                        <div className="flex justify-between items-center">
-                                            <div>
-                                                <div className="font-medium">{tx.type}</div>
-                                                <div className="text-xs text-gray-500">
-                                                    {tx.date.toLocaleDateString("en-US", {
-                                                        weekday: "short",
-                                                        month: "short",
-                                                        day: "2-digit",
-                                                        year: "numeric",
-                                                    })}
-                                                </div>
-                                            </div>
-                                            <div className="text-green-700 font-semibold text-lg">
-                                                + Rs {tx.amount}
-                                            </div>
-                                        </div>
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-                    </div>
+               <Balance/>
+
+               
+                  
                 </div>
             </div>
-        </div>
     );
 }
