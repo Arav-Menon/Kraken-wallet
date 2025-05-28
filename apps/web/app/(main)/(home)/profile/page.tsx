@@ -1,33 +1,109 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import axios from "axios";
+import { API_URL } from "../../../../api";
+import { signOut, useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { string } from "zod";
 
-
+type UserProfile = {
+    name: string;
+    email: string;
+    bankName: string;
+    number: string;
+}
 
 export default function ProfilePage() {
-    const [editing, setEditing] = useState(false);
-    const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const handleProfilePicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        
-    };
+    const router = useRouter();
+    const { data: session, status } = useSession();
+    const [error, setError] = useState();
+    const [profile, setProfile] = useState<UserProfile | null>(null);
 
-    const handleEdit = () => setEditing(true);
 
-    const handleSave = () => {
-    };
+    const onSignOut = async () => {
 
-    const handleLogout = () => {
-        // Implement logout logic
-        alert('Logged out!');
-    };
+        try {
 
-    const handleDeleteAccount = () => {
-        // Implement delete account logic
-        if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-            alert('Account deleted!');
+            if (status !== "authenticated") {
+                //@ts-ignore
+                setError(`You're not logged In`);
+                return;
+            }
+            await signOut({
+                redirect: false,
+                callbackUrl: '/'
+            });
+
+            localStorage.clear();
+
+            router.push('/');
+            router.refresh();
+
+        } catch (e) {
+            console.error(e);
+            //@ts-ignore
+            setError('Failed to logout. please try again later')
         }
-    };
+
+    }
+
+    const onDelete = async () => {
+
+        try {
+
+            const respose = await axios.delete(`${API_URL}/api/user/update/profile`, {
+                withCredentials: true // Important for sending session cookies to the backend
+            });
+
+            if (respose.status === 200) {
+
+                localStorage.clear();
+
+                await signOut({
+                    redirect: false,
+                    callbackUrl: '/'
+                })
+
+                router.push('/');
+                router.refresh();
+            }
+
+            return respose;
+
+        } catch (e) {
+            console.error(e);
+
+        }
+
+    }
+
+    const getUserProfile = async () => {
+
+        try {
+
+            const response = await axios.get(`${API_URL}/api/user/profile`, {
+                withCredentials: true
+            });
+
+            if (response.status === 200 && response.data.user) {
+                setProfile(response.data.user);
+            }
+
+        } catch (e) {
+            const showError = console.error(`Failed to fetch profile ${e} `);
+            console.log(showError)
+            //@ts-ignore
+            setError('Failed to load profile')
+        }
+    }
+
+    useEffect(() => {
+        if (status === 'authenticated') {
+            getUserProfile()
+        }
+    }, [status])
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 flex items-center justify-center">
@@ -36,82 +112,51 @@ export default function ProfilePage() {
                     <div className="relative group">
                         <button
                             className="absolute bottom-2 right-2 bg-purple-600 text-white rounded-full p-2 opacity-80 hover:opacity-100 transition"
-                            onClick={() => fileInputRef.current?.click()}
                             title="Change profile picture"
                         >
                         </button>
                         <input
                             type="file"
                             accept="image/*"
-                            ref={fileInputRef}
                             className="hidden"
-                            onChange={handleProfilePicChange}
                         />
                     </div>
-                    <h2 className="mt-4 text-2xl font-bold text-gray-800">Arav menon</h2>
-                    <p className="text-gray-500">Aravmenon.ak@gmail.com</p>
+                    <h2 className="mt-4 text-2xl font-bold text-gray-800">{profile?.name}</h2>
+                    <p className="text-gray-500">{profile?.email}</p>
                 </div>
                 <div className="mt-8 space-y-4">
                     <div>
                         <label className="block text-gray-600 font-medium">Username</label>
-                        {editing ? (
-                            <input
-                                className="w-full mt-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
-                            />
-                        ) : (
-                            <div className="mt-1 text-gray-800">Arav menon</div>
-                        )}
+                        <input type="text" className="mt-1 w-full p-2 border rounded-lg bg-gray-50" value={profile?.name} disabled />
                     </div>
                     <div>
                         <label className="block text-gray-600 font-medium">Bank Name</label>
-                        {editing ? (
-                            <input
-                                className="w-full mt-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
-                            />
-                        ) : (
-                            <div className="mt-1 text-gray-800">SBI</div>
-                        )}
+                        <input type="text" className="mt-1 w-full p-2 border rounded-lg bg-gray-50" value={profile?.bankName} disabled />
+
                     </div>
                     <div>
                         <label className="block text-gray-600 font-medium">Mobile Number</label>
-                        {editing ? (
-                            <input
-                                className="w-full mt-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
-                            />
-                        ) : (
-                            <div className="mt-1 text-gray-800">+91xxxxxxxxx</div>
-                        )}
+
+                        <input type="text" className="mt-1 w-full p-2 border rounded-lg bg-gray-50" value={profile?.number} disabled />
+
                     </div>
                 </div>
                 <div className="mt-8 flex justify-between gap-2">
-                    {editing ? (
-                        <button
-                            className="flex-1 bg-purple-600 text-white py-2 rounded-lg font-semibold hover:bg-purple-700 transition"
-                            onClick={handleSave}
-                        >
-                            Save
-                        </button>
-                    ) : (
-                        <button
-                            className="flex-1 bg-blue-500 text-white py-2 rounded-lg font-semibold hover:bg-blue-600 transition"
-                            onClick={handleEdit}
-                        >
-                            Edit Profile
-                        </button>
-                    )}
+
                     <button
                         className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg font-semibold hover:bg-gray-300 transition"
-                        onClick={handleLogout}
+                        onClick={onSignOut}
                     >
                         Logout
                     </button>
                 </div>
                 <button
                     className="mt-4 w-full bg-red-500 text-white py-2 rounded-lg font-semibold hover:bg-red-600 transition"
-                    onClick={handleDeleteAccount}
+                    onClick={onDelete}
                 >
                     Delete Account
                 </button>
+                <div className="text-red-500 text-center mt-4 font-bold ">{error}</div>
             </div>
         </div>
     );
