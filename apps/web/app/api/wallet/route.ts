@@ -2,7 +2,6 @@ import { getServerSession, Session } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "../../lib/auth";
 import { PrismaClient } from "../../../../../packages/db";
-import { RedirectType } from "next/navigation";
 
 const prisma = new PrismaClient();
 
