@@ -2,8 +2,11 @@ import { getServerSession, Session } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "../../lib/auth";
 import { PrismaClient } from "../../../../../packages/db";
+import { RedirectType } from "next/navigation";
 
 const prisma = new PrismaClient();
+
+
 export async function POST(req: NextRequest) {
 
     try {
@@ -24,7 +27,7 @@ export async function POST(req: NextRequest) {
         const transaction = await prisma.$transaction(async (tx) => {
 
             if (!session.user || !session.user.id) {
-                throw new Error("User information is missing in session.");
+                throw new Error("User information is missing");
             }
 
             const balance = await tx.balance.upsert({
@@ -48,8 +51,47 @@ export async function POST(req: NextRequest) {
             data: transaction
         })
 
-    }catch (e) {
-        console.log(e) 
+    } catch (e) {
+        console.log(e)
     }
 
+}
+
+export async function GET() {
+
+    try {
+
+        const session = await getServerSession(authOptions);
+
+        if (!session) {
+            return NextResponse.json(`You're not loggedIn`)
+        }
+
+        const getBalanceData = await prisma.balance.findUnique({
+            where: {
+                id: session.user.id as number
+            },
+            select: {
+                amount: true
+            }
+        })
+
+        if (!getBalanceData) {
+            return NextResponse.json({
+                message: 'No balance found',
+                balance: 0,
+            }, { status: 200 })
+        }
+
+        return NextResponse.json({
+            message: 'Your balance',
+            getBalanceData
+        })
+
+    } catch (e) {
+        console.error('Faild to get data from db')
+        return NextResponse.json({
+            message: 'Internal server error'
+        }, { status: 500 });
+    }
 }
