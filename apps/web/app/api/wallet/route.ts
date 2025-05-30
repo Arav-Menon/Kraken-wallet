@@ -81,7 +81,7 @@ export async function GET() {
 
         return NextResponse.json({
             message: 'Balance fetch succesfully',
-            getBalanceData
+            balance : getBalanceData?.amount || 0
         }, { status: 200 })
 
     } catch (e) {
