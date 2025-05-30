@@ -19,7 +19,12 @@ export default function ProfilePage() {
     const router = useRouter();
     const { data: session, status } = useSession();
     const [error, setError] = useState();
-    const [profile, setProfile] = useState<UserProfile | null>(null);
+    const [profile, setProfile] = useState<UserProfile>({
+        name: '',
+        email: '',
+        bankName: '',
+        number: ''
+    });
 
 
     const onSignOut = async () => {
@@ -79,31 +84,26 @@ export default function ProfilePage() {
 
     }
 
-    const getUserProfile = async () => {
 
-        try {
+    useEffect(() => {
 
-            const response = await axios.get(`${API_URL}/api/user/profile`, {
+        const fetchProfile = async () => {
+
+            const response = await axios.get(`${API_URL}/api/apiProfile`, {
                 withCredentials: true
             });
 
-            if (response.status === 200 && response.data.user) {
-                setProfile(response.data.user);
+            // console.log('getting response from /api/apiProfile', JSON.stringify(response.data))
+
+            if (response.status === 200 && response.data.getProfileInfo.length > 0) {
+                setProfile(response.data.getProfileInfo[0]);
             }
 
-        } catch (e) {
-            const showError = console.error(`Failed to fetch profile ${e} `);
-            console.log(showError)
-            //@ts-ignore
-            setError('Failed to load profile')
-        }
-    }
+        };
 
-    useEffect(() => {
-        if (status === 'authenticated') {
-            getUserProfile()
-        }
-    }, [status])
+        fetchProfile();
+
+    }, [])
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 flex items-center justify-center">
