@@ -7,27 +7,42 @@ export default function Balance() {
     const [error, setError] = useState<string>("")
     const [loading, setLoading] = useState<boolean>(true)
 
-    const getBalance = async () => {
-        try {
-            const response = await axios.get(`${API_URL}/api/wallet`, {
-                withCredentials: true
-            })
+    // const getBalance = async () => {
+    //     try {
+    //         const response = await axios.get(`${API_URL}/api/wallet`, {
+    //             withCredentials: true
+    //         })
 
-            console.log(`response : ${response.data}`)
+    //         console.log(`response : ${response.data}`)
 
-            if (response.status === 200 && response.data) {
-                setBalance(response.data.balance)
-            }
-            setLoading(false)
-        } catch (error) {
-            console.error('Failed to fetch balance:', error)
-            setError('Failed to load balance')
-            setLoading(false)
-        }
-    }
-
+    //         if (response.status === 200 && response.data) {
+    //             setBalance(response.data.balance)
+    //         }
+    //         setLoading(false)
+    //     } catch (error) {
+    //         console.error('Failed to fetch balance:', error)
+    //         setError('Failed to load balance')
+    //         setLoading(false)
+    //     }
+    // }
     useEffect(() => {
-        getBalance()
+
+        const fetchData = async () => {
+            try {
+
+                const respose = await axios.get(`${API_URL}/api/wallet`, {
+                    withCredentials: true
+                })
+                if (respose.status === 200 && respose.data) {
+                    setBalance(respose.data.balance)
+                }
+                setLoading(false);
+
+            } catch (e) {
+                console.log(e)
+            }
+        }
+        fetchData();
     }, [])
 
     if (loading) {
