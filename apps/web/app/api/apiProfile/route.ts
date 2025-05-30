@@ -108,54 +108,60 @@ export async function GET() {
 // }
 
 
-// export async function DELETE() {
+export async function DELETE() {
 
-//     try {
+    try {
 
-//         const session = await getServerSession(authOptions);
+        const session = await getServerSession(authOptions);
 
-//         if (!session?.user?.id) {
-//             return NextResponse.json({
-//                 message: `You're not logged In`,
-//             }, { status: 404 });
-//         }
+        if (!session?.user?.id) {
+            return NextResponse.json({
+                message: `You're not logged In`,
+            }, { status: 401 });
+        }
 
-//         const deleteResult = await prisma.$transaction(async (tx) => {
+        const deleteResult = await prisma.$transaction(async (tx) => {
 
-//             await tx.balance.deleteMany({
-//                 where: {
-//                     //@ts-ignore
-//                     userId: session.user.id
-//                 }
-//             })
+            await tx.balance.deleteMany({
+                where: {
+                    //@ts-ignore
+                    userId: session.user.id
+                }
+            })
 
-//             await tx.transfer.deleteMany({
-//                 where: {
-//                     //@ts-ignore
-//                     userId: session.user.id
-//                 }
-//             })
+            await tx.transfer.deleteMany({
+                where: {
+                    OR : [
 
-//             const deleteUser = await tx.user.delete({
-//                 where: {
-//                     id: session.user.id as number
-//                 }
-//             });
+                        //@ts-ignore
+                        { senderId : session.user.id },
+                        //@ts-ignore
+                        { receiverId : session.user.id },
 
-//             return deleteUser;
+                    ]
+                }
+            })
 
-//         })
+            const deleteUser = await tx.user.delete({
+                where: {
+                    id: session.user.id as number
+                }
+            });
 
-//         return NextResponse.json({
-//             message: "Profile deleted successfully",
-//             user: deleteResult,
-//         }, { status: 200 })
+            return deleteUser;
 
-//     } catch (e) {
-//         console.log(e)
-//         return NextResponse.json({
-//             message: 'Failed to delete the profile'
-//         }, { status: 500 })
-//     }
+        })
 
-// }
+        return NextResponse.json({
+            message: "Profile deleted successfully",
+            user: deleteResult,
+        }, { status: 200 })
+
+    } catch (e) {
+        console.log(e)
+        return NextResponse.json({
+            message: 'Failed to delete the profile'
+        }, { status: 500 })
+    }
+
+}

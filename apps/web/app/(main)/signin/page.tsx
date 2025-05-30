@@ -31,7 +31,7 @@ export default function SignInPage() {
       if (res?.error) {
         setError(error)
       } else {
-        router.replace('/dashboard')
+        router.replace('/pay')
       }
 
 

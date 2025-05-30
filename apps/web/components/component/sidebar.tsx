@@ -3,10 +3,8 @@
 import Link from 'next/link';
 
 const sidebarItems = [
-    { name: 'Dashboard', href: '/dashboard' },
     { name : 'Pay', href: '/pay' },
     { name: 'Wallet', href: '/wallet' },
-    { name: 'Transactions', href: '/transaction' },
     { name: 'Profile', href: '/profile' }
 ];
 

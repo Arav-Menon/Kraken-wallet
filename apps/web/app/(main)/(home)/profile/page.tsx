@@ -58,11 +58,11 @@ export default function ProfilePage() {
 
         try {
 
-            const respose = await axios.delete(`${API_URL}/api/user/update/profile`, {
-                withCredentials: true // Important for sending session cookies to the backend
+            const response = await axios.delete(`${API_URL}/api/apiProfile`, {
+                withCredentials: true
             });
 
-            if (respose.status === 200) {
+            if (response.status === 200) {
 
                 localStorage.clear();
 
@@ -75,7 +75,7 @@ export default function ProfilePage() {
                 router.refresh();
             }
 
-            return respose;
+            return response;
 
         } catch (e) {
             console.error(e);

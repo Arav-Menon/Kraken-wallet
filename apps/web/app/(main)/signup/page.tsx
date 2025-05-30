@@ -29,7 +29,7 @@ export default function Home() {
             });
 
             if(response.status === 201) {
-                router.push('/dashboard');
+                router.push('/pay');
             }
 
 
